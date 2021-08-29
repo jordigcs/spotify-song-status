@@ -1,0 +1,8 @@
+{
+  "name": "Spotify Song Status",
+  "version": "1.0.0",
+  "description": "Sets your status to 'Listening to (Song Name)' instead of simply 'Listening to Spotify'",
+  "author": "jordi",
+  "license": "MIT",
+  "dependencies": [ "pc-spotify" ]
+}
