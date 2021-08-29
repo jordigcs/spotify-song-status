@@ -2,20 +2,24 @@ const { Plugin } = require('powercord/entities');
 const { getModule } = require('powercord/webpack');
 const SpotifyAPI = require('../pc-spotify/SpotifyAPI');
 
+var statusBefore = {};
+var last;
 module.exports = class SpotifyAsStatus extends Plugin {
     async startPlugin() {
 
         this.setStatusToSong();
 
-        window.setInterval(this.setStatusToSong, 5000);
+        window.setInterval(this.setStatusToSong, 7750);
     }
 
     async setStatusToSong() {
-                
-        let userSettings = getModule([ 'guildPositions' ], false);
         let remoteSettings = getModule([ 'updateRemoteSettings' ], false);
 
-        let statusBefore = "";
+        SpotifyAPI.getPlayer()
+        .then((player) => {
+        if(player.item != last) {
+        let userSettings = getModule([ 'guildPositions' ], false);
+
         let songName = "";
         let currentStatus = "";
         let fullStatus = {};
@@ -25,13 +29,16 @@ module.exports = class SpotifyAsStatus extends Plugin {
                 currentStatus = fullStatus.text;
             }
         }
+        console.log(currentStatus.includes("Listening to "));
         if(!currentStatus.includes("Listening to ")) {
+            //console.log(fullStatus);
             statusBefore = currentStatus;
         }
-
-        SpotifyAPI.getPlayer()
-        .then((player) => {
+        else {
+            console.log("found");
+        }
             if(player.item != null && player.is_playing) {
+                last = player.item;
                 songName = player.item.name;
                 if(currentStatus != "Listening to " + songName) {
                     console.log("Setting status to Spotify Song!");
@@ -40,16 +47,20 @@ module.exports = class SpotifyAsStatus extends Plugin {
                 }
             }
             else {
-                if(currentStatus.includes("Listening to ")) {
-                    fullStatus["text"] = statusBefore;
-                    remoteSettings.updateRemoteSettings(fullStatus);
-                }
+                console.log("No playing or no item" + currentStatus);
+                console.log(statusBefore);
+                fullStatus["text"] = statusBefore;
+                remoteSettings.updateRemoteSettings(fullStatus);
             }
-        })
+        }
+        else {
+            fullStatus["text"] = statusBefore;
+            remoteSettings.updateRemoteSettings(fullStatus);
+        }
+    })
         .catch((e) => {
             fullStatus["text"] = statusBefore;
             remoteSettings.updateRemoteSettings(fullStatus);
-            error('Failed to get player', e) 
         }
         );
     }
