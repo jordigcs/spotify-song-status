@@ -7,7 +7,7 @@ const {
 const SpotifyAPI = require('../pc-spotify/SpotifyAPI');
 
 var statusBefore = "";
-var last;
+var last_id;
 var prefix;
 var active;
 var use_artist;
@@ -164,10 +164,11 @@ module.exports = class SpotifyAsStatus extends Plugin {
 
         SpotifyAPI.getPlayer()
             .then((player) => {
-                if (player.item != last) {
-                    if (player.item != null && player.is_playing && active) {
+                if (player.item.id != last_id) {
+                    console.log(player.is_playing);
+                    if (player.is_playing && active) {
                         console.log(player.item);
-                        last = player.item;
+                        last_id = player.item.id;
                         let artist = " by ";
                         for (var i = 0; i < player.item.artists.length; i++) {
                             artist += player.item.artists[i].name;
@@ -207,6 +208,7 @@ module.exports = class SpotifyAsStatus extends Plugin {
                             }
                         }
                         if (status != "") {
+                            console.log("1");
                             if (statusBefore != "") {
                                 status = statusBefore;
                             } else {
@@ -219,14 +221,11 @@ module.exports = class SpotifyAsStatus extends Plugin {
                         statusBefore = currentStatus;
                     }
                 } else {
-                    if (status != "") {
-                        if (statusBefore != "") {
-                            status = statusBefore;
-                        } else {
-                            status = null;
-                        }
+                    if (player.is_playing) {
+                        return;
                     }
                 }
+                console.log("ST" + status);
                 if (status != "") {
                     remoteSettings.updateRemoteSettings({
                         "customStatus": {
