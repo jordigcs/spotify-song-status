@@ -10,6 +10,7 @@ var statusBefore = "";
 var last;
 var prefix;
 var active;
+var use_artist;
 var letter_case;
 var interval;
 module.exports = class SpotifyAsStatus extends Plugin {
@@ -19,6 +20,7 @@ module.exports = class SpotifyAsStatus extends Plugin {
         console.log(prefix);
         active = window.localStorage.getItem("spotify_status_active");
         letter_case = window.localStorage.getItem("spotify_letter_case");
+        use_artist = window.localStorage.getItem("spotify_use_artist");
         if (prefix == null) {
             window.localStorage.setItem("spotify_status_prefix", "Listening to ");
             prefix = "Listening to ";
@@ -30,6 +32,10 @@ module.exports = class SpotifyAsStatus extends Plugin {
         if (letter_case == null) {
             window.localStorage.setItem("spotify_letter_case", -1);
             letter_case = -1;
+        }
+        if (use_artist == null) {
+            window.localStorage.setItem("spotify_use_artist", true);
+            use_artist = true;
         }
         interval = window.setInterval(this.setStatusToSong, 7750);
 
@@ -80,6 +86,19 @@ module.exports = class SpotifyAsStatus extends Plugin {
                 return {
                     send: false,
                     result: 'Toggled Spotify Status Setter. `active=' + active + '`'
+                };
+            }
+        });
+        powercord.api.commands.registerCommand({
+            command: 'spotify_toggle_artist',
+            description: 'Toggle the \'by [artist]\' suffix.',
+            usage: '{c}',
+            executor: (args) => {
+                use_artist = !use_artist;
+                window.localStorage.setItem("use_artist", use_artist);
+                return {
+                    send: false,
+                    result: 'Toggled \'by [artist]\' suffix. `use_artist=' + use_artist + '`'
                 };
             }
         });
@@ -147,8 +166,21 @@ module.exports = class SpotifyAsStatus extends Plugin {
             .then((player) => {
                 if (player.item != last) {
                     if (player.item != null && player.is_playing && active) {
+                        console.log(player.item);
                         last = player.item;
-                        songName = player.item.name;
+                        let artist = " by ";
+                        for (var i = 0; i < player.item.artists.length; i++) {
+                            artist += player.item.artists[i].name;
+                            if (i == player.item.artists.length-1) {
+                                continue;
+                            }
+                            if (player.item.artists.length > 2) {
+                                artist += ", ";
+                            } else if (player.item.artists.length > 1) {
+                                artist += " and ";
+                            }
+                        }
+                        songName = player.item.name + (use_artist ? artist : '');
 
 
                         switch (letter_case) {
@@ -166,12 +198,6 @@ module.exports = class SpotifyAsStatus extends Plugin {
                         if (currentStatus != current_prefix + songName) {
                             console.log("Setting status to Spotify Song!");
                             status = current_prefix + songName;
-                            remoteSettings.updateRemoteSettings({
-                                "customStatus": {
-                                    "text": status
-                                }
-                            });
-                            return;
                         }
                     } else {
                         if (!active) {
@@ -187,11 +213,6 @@ module.exports = class SpotifyAsStatus extends Plugin {
                                 status = "";
                             }
                         }
-                        remoteSettings.updateRemoteSettings({
-                            "customStatus": {
-                                "text": status
-                            }
-                        });
                     }
                     if (currentStatus != current_prefix + songName) {
                         //console.log(fullStatus);
@@ -205,10 +226,17 @@ module.exports = class SpotifyAsStatus extends Plugin {
                             status = null;
                         }
                     }
+                }
+                if (status != "") {
                     remoteSettings.updateRemoteSettings({
                         "customStatus": {
                             "text": status
                         }
+                    });
+                }
+                else {
+                    remoteSettings.updateRemoteSettings({
+                        "customStatus": null
                     });
                 }
             })
