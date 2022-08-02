@@ -6,6 +6,10 @@ const {
 } = require('powercord/webpack');
 const SpotifyAPI = require('../pc-spotify/SpotifyAPI');
 
+function is_str_empty_or_whitespace(string) {
+    return string != "" && string != " ";
+}
+
 var statusBefore = "";
 var last_id;
 var prefix;
@@ -207,9 +211,9 @@ module.exports = class SpotifyAsStatus extends Plugin {
                                 interval = -1;
                             }
                         }
-                        if (status != "") {
+                        if (!is_str_empty_or_whitespace(status)) {
                             console.log("1");
-                            if (statusBefore != "") {
+                            if (!is_str_empty_or_whitespace(statusBefore)) {
                                 status = statusBefore;
                             } else {
                                 status = "";
@@ -225,8 +229,7 @@ module.exports = class SpotifyAsStatus extends Plugin {
                         return;
                     }
                 }
-                console.log("ST" + status);
-                if (status != "") {
+                if (!is_str_empty_or_whitespace(status)) {
                     remoteSettings.updateRemoteSettings({
                         "customStatus": {
                             "text": status
@@ -241,8 +244,8 @@ module.exports = class SpotifyAsStatus extends Plugin {
             })
             .catch((e) => {
                 console.log(e);
-                if (status != "") {
-                    if (statusBefore != "") {
+                if (!is_str_empty_or_whitespace(status)) {
+                    if (!is_str_empty_or_whitespace(statusBefore)) {
                         status = statusBefore;
                     } else {
                         status = "";
