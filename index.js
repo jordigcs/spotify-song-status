@@ -256,6 +256,7 @@ module.exports = class SpotifyAsStatus extends Plugin {
                         "text": status
                     }
                 });
+                active = false;
             });
     }
 
