@@ -158,7 +158,9 @@ module.exports = class SpotifyAsStatus extends Plugin {
         let remoteSettings = getModule(['updateRemoteSettings'], false);
 
         let userSettings = getModule(['guildPositions'], false);
-
+        if (userSettings === null) {
+            return;
+        }
         let songName = "";
         let status = "";
         var currentStatus = "";
