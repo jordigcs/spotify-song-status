@@ -19,7 +19,6 @@ var letter_case;
 var interval;
 module.exports = class SpotifyAsStatus extends Plugin {
     async startPlugin() {
-        this.setStatusToSong();
         prefix = window.localStorage.getItem("spotify_status_prefix");
         console.log(prefix);
         active = window.localStorage.getItem("spotify_status_active");
@@ -148,6 +147,7 @@ module.exports = class SpotifyAsStatus extends Plugin {
                 };
             }
         });
+        this.setStatusToSong();
     }
 
     setStatusToSong() {
